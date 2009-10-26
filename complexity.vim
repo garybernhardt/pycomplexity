@@ -167,8 +167,11 @@ def complexity_name(complexity):
 def show_complexity():
     current_file = vim.eval('expand("%:p")')
     code = open(current_file).read()
-    lines = PrettyPrinter().flatten_stats(measure_complexity(code,
-                                                             current_file))
+    try:
+        lines = PrettyPrinter().flatten_stats(
+        measure_complexity(code, current_file))
+    except (IndentationError, SyntaxError):
+        return
 
     vim.command('sign unplace *')
 
