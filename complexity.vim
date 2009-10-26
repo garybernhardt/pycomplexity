@@ -158,7 +158,7 @@ vim.command('sign define high_complexity text=XX texthl=high_complexity')
 def complexity_name(complexity):
     if complexity > 14:
         return 'high_complexity'
-    elif complexity > 3:
+    elif complexity > 7:
         return 'medium_complexity'
     else:
         return 'low_complexity'
