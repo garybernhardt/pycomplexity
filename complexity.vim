@@ -186,3 +186,5 @@ show_complexity()
 END
 endfunction
 
+autocmd! BufWritePost,FileWritePost *.py call ShowComplexity()
+
