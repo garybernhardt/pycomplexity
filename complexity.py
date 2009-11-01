@@ -150,6 +150,15 @@ class Complexity:
             else_score = self.score_node(node.else_)
         return test_scores + else_score
 
+    @debug
+    def score_for(self, node):
+        body_score = self.score_node(node.body)
+        if node.else_ is None:
+            else_score = self.IMPLICIT_ELSE_SCORE
+        else:
+            else_score = self.score_node(node.else_)
+        return body_score + else_score
+
 
 def measure_complexity(ast, module_name=None):
     return CCVisitor(ast, description=module_name).stats
