@@ -44,6 +44,27 @@ class describe_complexity:
             else: 3
             """) == 3
 
+    def it_includes_complexity_of_child_nodes_of_ifs(self):
+        assert complexity(
+            """
+            if x:
+                if y: 1
+                else: 2
+            else: 3
+            """) == 3
+
+    def it_includes_complexity_of_child_nodes_of_elses(self):
+        assert complexity(
+            """
+            if x: 1
+            else:
+                if y:
+                    1
+                # implicit else
+            """) == 3
+
+    #it_includes_complexity_within_discarded_nodes
+
 
 def complexity(code):
     return Complexity(dedent(code)).score

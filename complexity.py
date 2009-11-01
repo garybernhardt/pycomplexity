@@ -133,9 +133,19 @@ class Complexity:
         return 0
 
     @debug
+    def score_discard(self, node):
+        print dir(node)
+        return 0
+
+    @debug
     def score_if(self, node):
-        tests = len(node.tests)
-        return tests + 1
+        test_scores = sum(self.score_node(statement)
+                          for condition, statement in node.tests)
+        if node.else_ is None:
+            else_score = 1
+        else:
+            else_score = self.score_node(node.else_)
+        return test_scores + else_score
 
 
 def measure_complexity(ast, module_name=None):
