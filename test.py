@@ -99,12 +99,13 @@ class describe_for_loops:
             """) == 3
 
 
-#it_includes_complexity_within_discarded_nodes
-#it_includes_complexity_of_compound_conditionals
-#it_includes_break_statements_in_for_loops
-#it_includes_continue_statements_in_for_loops
-#it_includes_while_loops
-#it_includes_for_loops_aborted_with_break_which_avoids_else_clause
+#test_inline_conditionals
+#test_discarded_nodes
+#test_compound_conditionals
+#test__break_statements_in_for_loops
+#test__continue_statements_in_for_loops
+#test__while_loops
+#test__for_loops_aborted_with_break_which_avoids_else_clause
 
 
 def complexity(code):
