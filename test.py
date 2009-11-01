@@ -84,16 +84,16 @@ class describe_conditionals:
 
 class describe_inline_conditionals:
     def test_inline_conditionals(self):
-        assert complexity("a = b if c else d") == 2
+        assert complexity("b if c else d") == 2
 
     def test_nested_inline_conditionals(self):
         assert complexity(
             """
-            a = (b
-                 if c
-                 else (d
-                       if e
-                       else f))
+            (b
+             if c
+             else (d
+                   if e
+                   else f))
             """) == 3
 
 
@@ -131,7 +131,6 @@ class describe_for_loops:
             """) == 3
 
 
-#test_discarded_nodes
 #test_compound_conditionals
 #test__break_statements_in_for_loops
 #test__continue_statements_in_for_loops

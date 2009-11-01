@@ -127,9 +127,10 @@ class Complexity:
 
     @debug
     def score_stmt(self, node):
-        return max(self.EMPTY_NODE_SCORE,
-                   sum(self.score_node(node)
-                   for node in node.getChildNodes()))
+        scores = (self.score_node(node)
+                  for node in node.getChildNodes())
+        nontrivial_scores = [score for score in scores if score > 1]
+        return max(1, sum(nontrivial_scores))
 
     @debug
     def score_assign(self, node):
@@ -143,13 +144,15 @@ class Complexity:
     def score_const(self, node):
         return 0
 
+    @debug
     def score_name(self, node):
         return 1
 
     @debug
     def score_discard(self, node):
-        return 0
+        return self.score_node(node.expr)
 
+    @debug
     def score_ifexp(self, node):
         return self.score_node(node.then) + self.score_node(node.else_)
 
