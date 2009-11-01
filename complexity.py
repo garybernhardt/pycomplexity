@@ -1,3 +1,4 @@
+import pprint
 import compiler
 from compiler.visitor import ASTVisitor
 
@@ -99,6 +100,42 @@ class CCVisitor(ASTVisitor):
     def visitOr(self, node):
         self.dispatchChildren(node)
         self.stats.complexity += 1
+
+
+def debug(fn):
+    def new_fn(self, *args):
+        result = fn(self, *args)
+        print 'called %s with %s and got %s' % (fn.__name__,
+                                                repr(args),
+                                                repr(result))
+        return result
+    return new_fn
+
+
+class Complexity:
+    def __init__(self, code):
+        ast = compiler.parse(code)
+        self.score = self.score_node(ast.node)
+
+    def score_node(self, node):
+        node_type = node.__class__.__name__
+        node_function = getattr(self, 'score_%s' % node_type.lower())
+        return node_function(node)
+
+    @debug
+    def score_stmt(self, node):
+        return max(1,
+                   sum(self.score_node(node)
+                   for node in node.getChildNodes()))
+
+    @debug
+    def score_pass(self, node):
+        return 0
+
+    @debug
+    def score_if(self, node):
+        tests = len(node.tests)
+        return tests + 1
 
 
 def measure_complexity(ast, module_name=None):
