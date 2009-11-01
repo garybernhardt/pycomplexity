@@ -113,6 +113,9 @@ def debug(fn):
 
 
 class Complexity:
+    EMPTY_NODE_SCORE = 1
+    IMPLICIT_ELSE_SCORE = EMPTY_NODE_SCORE
+
     def __init__(self, code):
         ast = compiler.parse(code)
         self.score = self.score_node(ast.node)
@@ -124,7 +127,7 @@ class Complexity:
 
     @debug
     def score_stmt(self, node):
-        return max(1,
+        return max(self.EMPTY_NODE_SCORE,
                    sum(self.score_node(node)
                    for node in node.getChildNodes()))
 
@@ -142,7 +145,7 @@ class Complexity:
         test_scores = sum(self.score_node(statement)
                           for condition, statement in node.tests)
         if node.else_ is None:
-            else_score = 1
+            else_score = self.IMPLICIT_ELSE_SCORE
         else:
             else_score = self.score_node(node.else_)
         return test_scores + else_score
