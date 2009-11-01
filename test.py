@@ -4,7 +4,7 @@ from complexity import Complexity
 
 
 class describe_simple_statements:
-    def test_simple_statement(self):
+    def test_pass(self):
         assert complexity('pass') == 1
 
     def test_statement_sequence(self):
@@ -12,6 +12,23 @@ class describe_simple_statements:
             """
             pass
             pass
+            """) == 1
+
+    def test_constant(self):
+        assert complexity("1") == 1
+
+    def test_assignment(self):
+        assert complexity("x = 1") == 1
+
+    def test_name(self):
+        assert complexity("a") == 1
+
+    def test_sequence_of_names(self):
+        assert complexity(
+            """
+            a
+            b
+            c
             """) == 1
 
 
@@ -65,6 +82,21 @@ class describe_conditionals:
             """) == 3
 
 
+class describe_inline_conditionals:
+    def test_inline_conditionals(self):
+        assert complexity("a = b if c else d") == 2
+
+    def test_nested_inline_conditionals(self):
+        assert complexity(
+            """
+            a = (b
+                 if c
+                 else (d
+                       if e
+                       else f))
+            """) == 3
+
+
 class describe_for_loops:
     def test_for_loops(self):
         assert complexity(
@@ -99,7 +131,6 @@ class describe_for_loops:
             """) == 3
 
 
-#test_inline_conditionals
 #test_discarded_nodes
 #test_compound_conditionals
 #test__break_statements_in_for_loops

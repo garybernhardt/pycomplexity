@@ -132,13 +132,26 @@ class Complexity:
                    for node in node.getChildNodes()))
 
     @debug
+    def score_assign(self, node):
+        return self.score_node(node.expr)
+
+    @debug
     def score_pass(self, node):
         return 0
 
     @debug
-    def score_discard(self, node):
-        print dir(node)
+    def score_const(self, node):
         return 0
+
+    def score_name(self, node):
+        return 1
+
+    @debug
+    def score_discard(self, node):
+        return 0
+
+    def score_ifexp(self, node):
+        return self.score_node(node.then) + self.score_node(node.else_)
 
     @debug
     def score_if(self, node):
