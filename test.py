@@ -131,6 +131,18 @@ class describe_for_loops:
             """) == 3
 
 
+class describe_integration:
+    def test_multiple_ifs_in_a_for_loop(self):
+        assert complexity(
+            """
+            for x in y:
+                if x: pass
+                # implicit else
+                if y: pass
+                # implicit else
+            """) == 5
+
+
 #test_compound_conditionals
 #test__break_statements_in_for_loops
 #test__continue_statements_in_for_loops
