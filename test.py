@@ -18,6 +18,7 @@ class describe_complexity:
         assert complexity(
             """
             if x: 1
+            # implicit else
             """) == 2
 
     def it_computes_branch_complexity_with_else(self):
@@ -32,6 +33,7 @@ class describe_complexity:
             """
             if x: 1
             elif y: 2
+            # implicit else
             """) == 3
 
     def it_computes_branch_complexity_with_else_if_and_else(self):
