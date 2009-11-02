@@ -1,4 +1,3 @@
-import pprint
 import compiler
 from compiler.visitor import ASTVisitor
 
@@ -238,6 +237,14 @@ class Complexity(ASTVisitor):
                       end_line=self.highest_line_in_node(node))
         self.stats.append(stats)
 
+    #visitLambda = visitFunction
+
+    def visitClass(self, node):
+        complexity = Complexity(node)
+        for stats_instance in complexity.stats:
+            stats_instance.name = '%s.%s' % (node.name, stats_instance.name)
+            self.stats.append(stats_instance)
+
     def highest_line_in_node(self, node, highest=0):
         children = node.getChildNodes()
         if node.lineno > highest:
@@ -246,13 +253,6 @@ class Complexity(ASTVisitor):
                           node.getChildNodes())
         lines = [node.lineno] + child_lines
         return max(lines)
-
-    #visitLambda = visitFunction
-
-    #def visitClass(self, node):
-    #    stats = ClassStats(node.name)
-    #    stats = CCVisitor(node, stats).stats
-    #    self.stats.classes.append(stats)
 
     def visitIf(self, node):
         tests = self._tests_for_if(node)
