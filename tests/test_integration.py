@@ -18,7 +18,7 @@ class describe_integration:
             def foo():
                 x = lambda: x if x else x
                 y if y else y
-            """).stats[0].score == 3
+            """).stats.named('foo').score == 3
 
     def test_a_big_hairy_mess(self):
         assert complexity(
