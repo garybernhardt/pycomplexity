@@ -15,19 +15,26 @@ class Complexity(ASTVisitor):
             node = compiler.parse(code_or_node)
         except TypeError:
             node = code_or_node
+            in_module = False
+        else:
+            in_module = True
 
         self.score = 1
         self._in_conditional = False
-        self.stack = []
-        self.stats = []
+        self.stats = StatsCollection()
         for child in node.getChildNodes():
             compiler.walk(child, self, walker=self)
 
+        if in_module:
+            end_line = max(1, code_or_node.count('\n') + 1)
+            self.stats.add(Stats(name='<module>',
+                                 score=self.score,
+                                 start_line=1,
+                                 end_line=end_line))
+
     def dispatchChildren(self, node):
-        self.stack.append(node)
         for child in node.getChildNodes():
             self.dispatch(child)
-        self.stack.pop()
 
     def visitFunction(self, node):
         #if not hasattr(node, 'name'): # lambdas
@@ -37,19 +44,19 @@ class Complexity(ASTVisitor):
                       score=score,
                       start_line=node.lineno,
                       end_line=self.highest_line_in_node(node))
-        self.stats.append(stats)
+        self.stats.add(stats)
 
     #visitLambda = visitFunction
 
     def visitClass(self, node):
         complexity = Complexity(node)
-        self.stats.append(Stats(name=node.name,
-                                score=complexity.score,
-                                start_line=node.lineno,
-                                end_line=self.highest_line_in_node(node)))
-        for stats_instance in complexity.stats:
+        self.stats.add(Stats(name=node.name,
+                             score=complexity.score,
+                             start_line=node.lineno,
+                             end_line=self.highest_line_in_node(node)))
+        for stats_instance in complexity.stats.ordered_by_line():
             stats_instance.name = '%s.%s' % (node.name, stats_instance.name)
-            self.stats.append(stats_instance)
+            self.stats.add(stats_instance)
 
     def highest_line_in_node(self, node, highest=0):
         children = node.getChildNodes()
@@ -98,12 +105,33 @@ class Complexity(ASTVisitor):
         self.score += len(node.handlers)
 
 
+class StatsCollection:
+    def __init__(self):
+        self._stats = []
+
+    def add(self, stats):
+        self._stats.append(stats)
+
+    def ordered_by_line(self):
+        return sorted(self._stats, key=lambda stats: stats.start_line)
+
+    def named(self, name):
+        return [s for s in self._stats if s.name == name][0]
+
+
 class Stats:
     def __init__(self, name, score, start_line, end_line):
         self.name = name
         self.score = score
         self.start_line = start_line
         self.end_line = end_line
+
+    def __repr__(self):
+        return 'Stats(name=%s, score=%s, start_line=%s, end_line=%s)' % (
+            repr(self.name),
+            repr(self.score),
+            repr(self.start_line),
+            repr(self.end_line))
 
 
 def measure_complexity(ast, module_name=None):
@@ -140,7 +168,7 @@ def show_complexity():
     current_file = vim.eval('expand("%:p")')
     code = open(current_file).read()
     try:
-        stats = Complexity(code).stats
+        stats = Complexity(code).stats.ordered_by_line()
     except (IndentationError, SyntaxError):
         return
 
