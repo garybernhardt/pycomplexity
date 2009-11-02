@@ -158,6 +158,62 @@ class describe_for_loops:
             """) == 3
 
 
+# These are basically identical to the "for" loop tests, but abstracting them
+# to remove the duplication would be just as long and more confusing.
+class describe_while_loops:
+    def test_while_loops(self):
+        assert complexity(
+            """
+            while x: 1
+            # implicit else
+            """) == 2
+
+    def test_else_clauses_on_while_loops(self):
+        assert complexity(
+            """
+            while x: 1
+            else: 2
+            """) == 2
+
+    def test_child_nodes_of_while_loops(self):
+        assert complexity(
+            """
+            while x:
+                if x: 1
+                else: 2
+            # implicit else
+            """) == 3
+
+    def test_child_nodes_in_while_loop_else_clauses(self):
+        assert complexity(
+            """
+            while x: 1
+            else:
+                if x: 2
+                else: 3
+            """) == 3
+
+    def test_break_statements_in_while_loops(self):
+        # See discussion for "for" loops above.
+        assert complexity(
+            """
+            while x:
+                if x:
+                    break
+            """) == 3
+
+    def test_break_statements_in_while_loops_with_else_clauses(self):
+        # See discussion for for loops above.
+        assert complexity(
+            """
+            while x:
+                if x:
+                    break
+            else:
+                pass
+            """) == 3
+
+
 class describe_integration:
     def test_multiple_ifs_in_a_for_loop(self):
         assert complexity(
@@ -172,8 +228,6 @@ class describe_integration:
 
 #test_compound_conditionals
 #test_continue_statements_in_for_loops
-#test_while_loops
-#test_for_loops_aborted_with_break_which_avoids_else_clause
 
 
 def complexity(code):

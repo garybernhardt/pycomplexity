@@ -179,6 +179,10 @@ class Complexity:
     def score_break(self, node):
         return 0
 
+    @debug
+    def score_while(self, node):
+        return self.score_for(node)
+
 
 def measure_complexity(ast, module_name=None):
     return CCVisitor(ast, description=module_name).stats
