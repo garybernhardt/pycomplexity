@@ -351,6 +351,34 @@ class describe_list_comprehensions:
             """) == 5
 
 
+class describe_generator_expression:
+    def test_generator_expression(self):
+        assert complexity("(x for x in y)") == 2
+
+    def test_with_inline_conditional(self):
+        assert complexity("(x if y else z for x in x)") == 3
+
+    def test_nested(self):
+        assert complexity("(x for x in (y for y in z))") == 3
+
+    def test_with_multiple_fors(self):
+        assert complexity("(x for x in y for y in z)") == 3
+
+    def test_with_conditional(self):
+        assert complexity("(x for x in y if x)") == 3
+
+    def test_with_multiple_conditionals(self):
+        assert complexity("(x for x in y if x and y)") == 4
+
+    def test_with_multiple_conditionals_and_fors(self):
+        assert complexity(
+            """
+            (x for x in x
+             for y in y
+             if x and y)
+            """) == 5
+
+
 #test_logical_operator_in_inline_conditional
 
 

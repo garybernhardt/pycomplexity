@@ -256,7 +256,7 @@ class Complexity(ASTVisitor):
 
     visitFor = visitGenExprFor = visitGenExprIf \
             = visitListCompFor = visitListCompIf \
-            = visitWhile = _visitWith = __processDecisionPoint
+            = visitWhile = __processDecisionPoint
 
     def _visit_logical_operator(self, node):
         self.dispatchChildren(node)
@@ -267,7 +267,7 @@ class Complexity(ASTVisitor):
     visitOr = _visit_logical_operator
 
     def _in_conditional(self):
-        return any(node.__class__.__name__ in ['If', 'ListCompIf']
+        return any(node.__class__.__name__ in ['If', 'ListCompIf', 'GenExprIf']
                    for node in self.stack)
 
     def visitTryExcept(self, node):
