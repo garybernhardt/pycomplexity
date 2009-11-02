@@ -157,6 +157,14 @@ class describe_for_loops:
                 pass
             """) == 3
 
+    def test_continue_statement_in_for_loop(self):
+        assert complexity(
+            """
+            for x in y:
+                if x:
+                    continue
+            """) == 3
+
 
 # These are basically identical to the "for" loop tests, but abstracting them
 # to remove the duplication would be just as long and more confusing.
@@ -227,7 +235,6 @@ class describe_integration:
 
 
 #test_compound_conditionals
-#test_continue_statements_in_for_loops
 
 
 def complexity(code):
