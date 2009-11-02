@@ -211,6 +211,7 @@ class Complexity(ASTVisitor):
         ASTVisitor.__init__(self)
         ast = compiler.parse(ast)
         self.score = 1
+        self._in_conditional = False
         self.stack = []
         compiler.walk(ast.node, self, walker=self)
         print 'got score', self.score
@@ -247,37 +248,41 @@ class Complexity(ASTVisitor):
     #    self.stats.classes.append(stats)
 
     def visitIf(self, node):
-        self.score += len(node.tests)
+        tests = self._tests_for_if(node)
+        self.score += len(tests)
+        self._in_conditional = True
+        for test in tests:
+            self.dispatch(test)
+        self._in_conditional = False
         self.dispatchChildren(node)
+
+    def _tests_for_if(self, if_node):
+        try:
+            return [test for test, body in if_node.tests]
+        except AttributeError:
+            return [if_node.test]
+
+    visitGenExprIf = visitListCompIf = visitIfExp = visitIf
 
     def __processDecisionPoint(self, node):
         self.score += 1
         self.dispatchChildren(node)
 
-    visitFor = visitGenExprFor = visitGenExprIf \
-            = visitListCompFor = visitListCompIf \
+    visitFor = visitGenExprFor \
+            = visitListCompFor \
             = visitWhile = __processDecisionPoint
 
     def _visit_logical_operator(self, node):
         self.dispatchChildren(node)
-        if self._in_conditional():
+        if self._in_conditional:
             self.score += len(node.getChildren()) - 1
 
     visitAnd = _visit_logical_operator
     visitOr = _visit_logical_operator
 
-    def _in_conditional(self):
-        conditional_node_types = ['If', 'ListCompIf', 'GenExprIf', 'IfExp']
-        return any(node.__class__.__name__ in conditional_node_types
-                   for node in self.stack)
-
     def visitTryExcept(self, node):
         self.dispatchChildren(node)
         self.score += len(node.handlers)
-
-    def visitIfExp(self, node):
-        self.dispatchChildren(node)
-        self.score += 1
 
 
 def measure_complexity(ast, module_name=None):

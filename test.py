@@ -102,6 +102,13 @@ class describe_conditionals:
             if x or (y or z): 1
             """) == 4
 
+    def test_logical_operator_inside_conditional_but_outside_test(self):
+        assert complexity(
+            """
+            if x:
+                x and y
+            """) == 2
+
 
 class describe_inline_conditionals:
     def test_inline_conditionals(self):
