@@ -65,3 +65,7 @@ while a: pass
 with a as a:
     pass
 yield a
+
+# Thankst to Josh Lee (jleedev) for pointing this missing node out.
+~x
+
