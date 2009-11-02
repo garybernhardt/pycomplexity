@@ -521,6 +521,14 @@ class describe_integration:
                 # implicit else
             """).score == 4
 
+    def test_lambdas_in_a_function(self):
+        assert complexity(
+            """
+            def foo():
+                x = lambda: x if x else x
+                y if y else y
+            """).stats[0].score == 3
+
     def test_a_big_hairy_mess(self):
         assert complexity(
             """
