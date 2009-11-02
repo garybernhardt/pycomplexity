@@ -175,6 +175,10 @@ class Complexity:
             else_score = self.score_node(node.else_)
         return body_score + else_score
 
+    @debug
+    def score_break(self, node):
+        return 0
+
 
 def measure_complexity(ast, module_name=None):
     return CCVisitor(ast, description=module_name).stats

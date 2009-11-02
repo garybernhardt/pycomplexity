@@ -130,6 +130,33 @@ class describe_for_loops:
                 else: 3
             """) == 3
 
+    def test_break_statements_in_for_loops(self):
+        # This seems like it should be more complex than an if with "pass"es,
+        # but it's not. The break just reroutes the "if" path: instead of
+        # going to the end of the loop and back up top, it goes straight back
+        # up.
+        assert complexity(
+            """
+            for x in y:
+                if x:
+                    break
+            """) == 3
+
+    def test_break_statements_in_for_loops_with_else_clauses(self):
+        # A "break" in a for loop skips the "else". My intuitive
+        # interpretation is that this should increase CC by one. However, it's
+        # basically a GOTO, and GOTOs don't increase the CC. Drawing the graph
+        # out seems to confirm that a "break" with an "else" does not add a
+        # path.
+        assert complexity(
+            """
+            for x in y:
+                if x:
+                    break
+            else:
+                pass
+            """) == 3
+
 
 class describe_integration:
     def test_multiple_ifs_in_a_for_loop(self):
@@ -144,10 +171,9 @@ class describe_integration:
 
 
 #test_compound_conditionals
-#test__break_statements_in_for_loops
-#test__continue_statements_in_for_loops
-#test__while_loops
-#test__for_loops_aborted_with_break_which_avoids_else_clause
+#test_continue_statements_in_for_loops
+#test_while_loops
+#test_for_loops_aborted_with_break_which_avoids_else_clause
 
 
 def complexity(code):
