@@ -125,7 +125,16 @@ class Complexity:
         node_function = getattr(self, 'score_%s' % node_type.lower())
         return node_function(node)
 
-    TRIVIAL_NODES = ['pass', 'const', 'name', 'break', 'continue']
+    TRIVIAL_NODES = ['pass', 'const', 'name', 'break', 'continue', 'from',
+                     'add', 'and', 'assert', 'augassign', 'backquote',
+                     'bitand', 'bitor', 'bitxor', 'callfunc', 'class',
+                     'compare', 'function', 'dict', 'div', 'subscript',
+                     'exec', 'floordiv', 'genexpr', 'getattr', 'global',
+                     'import', 'lambda', 'leftshift', 'list', 'listcomp',
+                     'mod', 'mul', 'not', 'or', 'power', 'raise', 'print',
+                     'printnl', 'return', 'rightshift', 'slice', 'sub',
+                     'tuple',
+                    ]
     for node_name in TRIVIAL_NODES:
         exec('def score_%s(self, node): return 0' % node_name)
 
@@ -172,6 +181,17 @@ class Complexity:
     @debug
     def score_while(self, node):
         return self.score_for(node)
+
+    def score_tryexcept(self, node):
+        body_score = self.score_node(node.body)
+        else_score = 0 if node.else_ is None else self.score_node(node.else_)
+        handlers_score = sum(self.score_node(handler_node)
+                             for exception_type, name, handler_node
+                             in node.handlers)
+        return body_score + else_score + handlers_score
+
+    def score_tryfinally(self, node):
+        return self.score_node(node.body) + self.score_node(node.final)
 
 
 def measure_complexity(ast, module_name=None):

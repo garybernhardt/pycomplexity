@@ -230,6 +230,73 @@ class describe_while_loops:
             """) == 3
 
 
+class describe_exception_handling:
+    def test_try(self):
+        assert complexity(
+            """
+            try: 1
+            except: 2
+            """) == 2
+
+    def test_try_with_multiple_excepts(self):
+        assert complexity(
+            """
+            try: 1
+            except A: 2
+            except B: 3
+            except C: 4
+            """) == 4
+
+    def test_try_with_multiple_exception_types_in_one_except(self):
+        assert complexity(
+            """
+            try: 1
+            except (A, B): 2
+            """) == 2
+
+    def test_try_with_child_nodes(self):
+        assert complexity(
+            """
+            try:
+                if x: 1
+                else: 2
+            except: 2
+            """) == 3
+
+    def test_try_with_finally(self):
+        assert complexity(
+            """
+            try: 1
+            except: 2
+            finally: 3
+            """) == 3
+
+    def test_try_with_else(self):
+        assert complexity(
+            """
+            try: 1
+            except: 2
+            else: 3
+            """) == 3
+
+    def test_try_with_finally_and_child_nodes(self):
+        assert complexity(
+            """
+            try:
+                if a: 1
+                else: 2
+            except:
+                if a: 1
+                else: 2
+            else:
+                if a: 1
+                else: 2
+            finally:
+                if a: 1
+                else: 2
+            """) == 8
+
+
 class describe_integration:
     def test_multiple_ifs_in_a_for_loop(self):
         assert complexity(
