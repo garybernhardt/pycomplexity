@@ -1,5 +1,12 @@
-" This will add cyclomatic complexity annotations to your source code but it
-" is CURRENTLY WRONG because the complexity algorithm is incorrect!
+" complexity.vim
+" Gary Bernhardt (http://blog.extracheese.org)
+"
+" This will add cyclomatic complexity annotations to your source code. It is
+" no longer wrong (as previous versions were!) However, it is now much slower.
+" Almost all of the time is spent setting up the signs in vim, which clearly
+" wasn't meant to track this many signs at once. I'd like to speed this up by
+" having the Python code remember where it placed the signs, and only change
+" them if they actually changed in the code. Contributions are welcome!
 
 python << endpython
 %(python_source)s
