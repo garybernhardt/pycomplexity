@@ -247,7 +247,6 @@ class Complexity(ASTVisitor):
     #    self.stats.classes.append(stats)
 
     def visitIf(self, node):
-        print len(node.tests)
         self.score += len(node.tests)
         self.dispatchChildren(node)
 
@@ -259,16 +258,16 @@ class Complexity(ASTVisitor):
             = visitListCompFor = visitListCompIf \
             = visitWhile = _visitWith = __processDecisionPoint
 
-    def _visit_conditional(self, node):
+    def _visit_logical_operator(self, node):
         self.dispatchChildren(node)
         if self._in_conditional():
             self.score += len(node.getChildren()) - 1
 
-    visitAnd = _visit_conditional
-    visitOr = _visit_conditional
+    visitAnd = _visit_logical_operator
+    visitOr = _visit_logical_operator
 
     def _in_conditional(self):
-        return any(node.__class__.__name__ == 'If'
+        return any(node.__class__.__name__ in ['If', 'ListCompIf']
                    for node in self.stack)
 
     def visitTryExcept(self, node):

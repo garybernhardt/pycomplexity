@@ -323,6 +323,37 @@ class describe_exception_handling:
             """) == 6
 
 
+class describe_list_comprehensions:
+    def test_list_comprehension(self):
+        assert complexity("[x for x in y]") == 2
+
+    def test_list_comprehension_with_inline_conditional(self):
+        assert complexity("[x if y else z for x in x]") == 3
+
+    def test_nested_list_comprehensions(self):
+        assert complexity("[x for x in [y for y in z]]") == 3
+
+    def test_list_comprehensions_with_multiple_fors(self):
+        assert complexity("[x for x in y for y in z]") == 3
+
+    def test_list_comprehension_with_conditional(self):
+        assert complexity("[x for x in y if x]") == 3
+
+    def test_list_comprehension_with_multiple_conditionals(self):
+        assert complexity("[x for x in y if x and y]") == 4
+
+    def test_list_comprehension_with_multiple_conditionals_and_fors(self):
+        assert complexity(
+            """
+            [x for x in x
+             for y in y
+             if x and y]
+            """) == 5
+
+
+#test_logical_operator_in_inline_conditional
+
+
 class describe_integration:
     def test_multiple_ifs_in_a_for_loop(self):
         assert complexity(
