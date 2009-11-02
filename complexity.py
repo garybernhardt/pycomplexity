@@ -125,6 +125,10 @@ class Complexity:
         node_function = getattr(self, 'score_%s' % node_type.lower())
         return node_function(node)
 
+    TRIVIAL_NODES = ['pass', 'const', 'name', 'break', 'continue']
+    for node_name in TRIVIAL_NODES:
+        exec('def score_%s(self, node): return 0' % node_name)
+
     @debug
     def score_stmt(self, node):
         scores = (self.score_node(node)
@@ -137,24 +141,14 @@ class Complexity:
         return self.score_node(node.expr)
 
     @debug
-    def score_pass(self, node):
-        return 0
-
-    @debug
-    def score_const(self, node):
-        return 0
-
-    @debug
-    def score_name(self, node):
-        return 1
-
-    @debug
     def score_discard(self, node):
         return self.score_node(node.expr)
 
     @debug
     def score_ifexp(self, node):
-        return self.score_node(node.then) + self.score_node(node.else_)
+        def score_subexpr(node):
+            return max(1, self.score_node(node))
+        return score_subexpr(node.then) + score_subexpr(node.else_)
 
     @debug
     def score_if(self, node):
@@ -176,16 +170,8 @@ class Complexity:
         return body_score + else_score
 
     @debug
-    def score_break(self, node):
-        return 0
-
-    @debug
     def score_while(self, node):
         return self.score_for(node)
-
-    @debug
-    def score_continue(self, node):
-        return 0
 
 
 def measure_complexity(ast, module_name=None):
