@@ -241,6 +241,10 @@ class Complexity(ASTVisitor):
 
     def visitClass(self, node):
         complexity = Complexity(node)
+        self.stats.append(Stats(name=node.name,
+                                score=complexity.score,
+                                start_line=node.lineno,
+                                end_line=self.highest_line_in_node(node)))
         for stats_instance in complexity.stats:
             stats_instance.name = '%s.%s' % (node.name, stats_instance.name)
             self.stats.append(stats_instance)
