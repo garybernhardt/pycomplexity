@@ -273,7 +273,6 @@ class Complexity(ASTVisitor):
 
     def visitTryExcept(self, node):
         self.dispatchChildren(node)
-        print len(node.handlers)
         self.score += len(node.handlers)
 
     def visitIfExp(self, node):
