@@ -117,6 +117,9 @@ class describe_inline_conditionals:
                    else f))
             """) == 3
 
+    def test_logical_operator_in_inline_conditional(self):
+        assert complexity("a if b and c else d") == 3
+
 
 class describe_for_loops:
     def test_for_loops(self):
@@ -377,9 +380,6 @@ class describe_generator_expression:
              for y in y
              if x and y)
             """) == 5
-
-
-#test_logical_operator_in_inline_conditional
 
 
 class describe_integration:

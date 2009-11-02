@@ -267,7 +267,8 @@ class Complexity(ASTVisitor):
     visitOr = _visit_logical_operator
 
     def _in_conditional(self):
-        return any(node.__class__.__name__ in ['If', 'ListCompIf', 'GenExprIf']
+        conditional_node_types = ['If', 'ListCompIf', 'GenExprIf', 'IfExp']
+        return any(node.__class__.__name__ in conditional_node_types
                    for node in self.stack)
 
     def visitTryExcept(self, node):
