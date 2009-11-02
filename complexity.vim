@@ -6,127 +6,108 @@ import compiler
 from compiler.visitor import ASTVisitor
 
 
-class Stats(object):
-
-    def __init__(self, name):
-        self.name = name
-        self.classes = []
-        self.functions = []
-        self.complexity = 1
-
-    def __str__(self):
-        return 'Stats: name=%r, classes=%r, functions=%r, complexity=%r' \
-                % (self.name, self.classes, self.functions, self.complexity)
-
-    __repr__ = __str__
-
-
-class ClassStats(Stats):
-
-    def __str__(self):
-        return 'Stats: name=%r, methods=%r, complexity=%r, inner_class=%r' \
-                % (self.name, self.functions, self.complexity, self.classes)
-
-    __repr__ = __str__
-
-
-class DefStats(Stats):
-    def __init__(self, name, first_line, last_line):
-        super(DefStats, self).__init__(name)
-        self.first_line = first_line
-        self.last_line = last_line
-
-    def __str__(self):
-        return 'DefStats: name=%r, complexity=%r' \
-                % (self.name, self.complexity)
-
-    __repr__ = __str__
-
-
-class CCVisitor(ASTVisitor):
+class Complexity(ASTVisitor):
     """Encapsulates the cyclomatic complexity counting."""
 
-    def __init__(self, ast, stats=None, description=None):
+    def __init__(self, code_or_node, stats=None, description=None):
         ASTVisitor.__init__(self)
-        if isinstance(ast, basestring):
-            ast = compiler.parse(ast)
+        try:
+            node = compiler.parse(code_or_node)
+        except TypeError:
+            node = code_or_node
 
-        self.stats = stats or Stats(description or '<module>')
-        for child in ast.getChildNodes():
+        self.score = 1
+        self._in_conditional = False
+        self.stack = []
+        self.stats = []
+        for child in node.getChildNodes():
             compiler.walk(child, self, walker=self)
 
     def dispatchChildren(self, node):
+        self.stack.append(node)
         for child in node.getChildNodes():
             self.dispatch(child)
+        self.stack.pop()
 
     def visitFunction(self, node):
-        if not hasattr(node, 'name'): # lambdas
-            node.name = '<lambda>'
-        stats = DefStats(node.name,
-                         node.lineno,
-                         self.highest_line_in_node(node))
-        stats = CCVisitor(node, stats).stats
-        self.stats.functions.append(stats)
+        #if not hasattr(node, 'name'): # lambdas
+        #    node.name = '<lambda>'
+        score=Complexity(node).score
+        stats = Stats(name=node.name,
+                      score=score,
+                      start_line=node.lineno,
+                      end_line=self.highest_line_in_node(node))
+        self.stats.append(stats)
+
+    #visitLambda = visitFunction
+
+    def visitClass(self, node):
+        complexity = Complexity(node)
+        self.stats.append(Stats(name=node.name,
+                                score=complexity.score,
+                                start_line=node.lineno,
+                                end_line=self.highest_line_in_node(node)))
+        for stats_instance in complexity.stats:
+            stats_instance.name = '%s.%s' % (node.name, stats_instance.name)
+            self.stats.append(stats_instance)
 
     def highest_line_in_node(self, node, highest=0):
         children = node.getChildNodes()
         if node.lineno > highest:
             highest = node.lineno
         child_lines = map(self.highest_line_in_node,
-                       node.getChildNodes())
+                          node.getChildNodes())
         lines = [node.lineno] + child_lines
         return max(lines)
 
-    visitLambda = visitFunction
-
-    def visitClass(self, node):
-        stats = ClassStats(node.name)
-        stats = CCVisitor(node, stats).stats
-        self.stats.classes.append(stats)
-
     def visitIf(self, node):
-        self.stats.complexity += len(node.tests)
+        tests = self._tests_for_if(node)
+        self.score += len(tests)
+        self._in_conditional = True
+        for test in tests:
+            self.dispatch(test)
+        self._in_conditional = False
         self.dispatchChildren(node)
+
+    def _tests_for_if(self, if_node):
+        try:
+            return [test for test, body in if_node.tests]
+        except AttributeError:
+            return [if_node.test]
+
+    visitGenExprIf = visitListCompIf = visitIfExp = visitIf
 
     def __processDecisionPoint(self, node):
-        self.stats.complexity += 1
+        self.score += 1
         self.dispatchChildren(node)
 
-    visitFor = visitGenExprFor = visitGenExprIf \
-            = visitListCompFor = visitListCompIf \
-            = visitWhile = _visitWith = __processDecisionPoint
+    visitFor = visitGenExprFor \
+            = visitListCompFor \
+            = visitWhile = __processDecisionPoint
 
-    def visitAnd(self, node):
+    def _visit_logical_operator(self, node):
         self.dispatchChildren(node)
-        self.stats.complexity += 1
+        if self._in_conditional:
+            self.score += len(node.getChildren()) - 1
 
-    def visitOr(self, node):
+    visitAnd = _visit_logical_operator
+    visitOr = _visit_logical_operator
+
+    def visitTryExcept(self, node):
         self.dispatchChildren(node)
-        self.stats.complexity += 1
+        self.score += len(node.handlers)
+
+
+class Stats:
+    def __init__(self, name, score, start_line, end_line):
+        self.name = name
+        self.score = score
+        self.start_line = start_line
+        self.end_line = end_line
 
 
 def measure_complexity(ast, module_name=None):
     return CCVisitor(ast, description=module_name).stats
-
-
-class Table(object):
-
-    def __init__(self, headings, rows):
-        self.headings = headings
-        self.rows = rows
-
-        max_col_sizes = [len(x) for x in headings]
-        for row in rows:
-            for i, col in enumerate(row):
-                max_col_sizes[i] = max(max_col_sizes[i], len(str(col)))
-        self.max_col_sizes = max_col_sizes
-
-    def __iter__(self):
-        for row in self.rows:
-            yield row
-
-    def __nonzero__(self):
-        return len(self.rows)
 
 
 class PrettyPrinter(object):
@@ -159,16 +140,15 @@ def show_complexity():
     current_file = vim.eval('expand("%:p")')
     code = open(current_file).read()
     try:
-        lines = PrettyPrinter().flatten_stats(
-        measure_complexity(code, current_file))
+        stats = Complexity(code).stats
     except (IndentationError, SyntaxError):
         return
 
     vim.command('sign unplace *')
 
-    for name, complexity, start, end in lines:
-        complexity = complexity_name(complexity)
-        for line in range(start, end + 1):
+    for stat in stats:
+        complexity = complexity_name(stat.score)
+        for line in range(stat.start_line, stat.end_line + 1):
             vim.command(':sign place %i line=%i name=%s file=%s' %
                         (line, line, complexity, vim.eval('expand("%:p")')))
 
