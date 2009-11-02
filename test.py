@@ -221,6 +221,14 @@ class describe_while_loops:
                 pass
             """) == 3
 
+    def test_continue_statement_in_while_loop(self):
+        assert complexity(
+            """
+            while x:
+                if x:
+                    continue
+            """) == 3
+
 
 class describe_integration:
     def test_multiple_ifs_in_a_for_loop(self):
