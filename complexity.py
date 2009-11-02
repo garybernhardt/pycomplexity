@@ -50,7 +50,7 @@ class Complexity(ASTVisitor):
                              score=complexity.score,
                              start_line=node.lineno,
                              end_line=self.highest_line_in_node(node)))
-        for stats_instance in complexity.stats.all():
+        for stats_instance in complexity.stats.ordered_by_line():
             stats_instance.name = '%s.%s' % (node.name, stats_instance.name)
             self.stats.add(stats_instance)
 
@@ -108,8 +108,8 @@ class StatsCollection:
     def add(self, stats):
         self._stats.append(stats)
 
-    def all(self):
-        return self._stats[:]
+    def ordered_by_line(self):
+        return sorted(self._stats, key=lambda stats: stats.start_line)
 
     def named(self, name):
         return [s for s in self._stats if s.name == name][0]
@@ -164,7 +164,7 @@ def show_complexity():
     current_file = vim.eval('expand("%:p")')
     code = open(current_file).read()
     try:
-        stats = Complexity(code).stats
+        stats = Complexity(code).stats.ordered_by_line()
     except (IndentationError, SyntaxError):
         return
 
