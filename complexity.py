@@ -33,16 +33,12 @@ class Complexity(ASTVisitor):
             self.dispatch(child)
 
     def visitFunction(self, node):
-        #if not hasattr(node, 'name'): # lambdas
-        #    node.name = '<lambda>'
         score=Complexity(node).score
         stats = Stats(name=node.name,
                       score=score,
                       start_line=node.lineno,
                       end_line=self.highest_line_in_node(node))
         self.stats.add(stats)
-
-    #visitLambda = visitFunction
 
     def visitClass(self, node):
         complexity = Complexity(node)
@@ -128,25 +124,6 @@ class Stats:
             repr(self.score),
             repr(self.start_line),
             repr(self.end_line))
-
-
-def measure_complexity(ast, module_name=None):
-    return CCVisitor(ast, description=module_name).stats
-
-
-class PrettyPrinter(object):
-    def flatten_stats(self, stats):
-        def flatten(stats):
-            for s in stats.classes:
-                name = s.name
-                for x in s.functions:
-                    fname = '.'.join([name, x.name])
-                    yield fname, x.complexity, x.first_line, x.last_line
-            for s in stats.functions:
-                name = s.name
-                yield name, s.complexity, s.first_line, s.last_line
-
-        return [t for t in flatten(stats)]
 
 
 def complexity_name(complexity):
