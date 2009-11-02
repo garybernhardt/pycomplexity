@@ -3,8 +3,6 @@ from compiler.visitor import ASTVisitor
 
 
 class Complexity(ASTVisitor):
-    """Encapsulates the cyclomatic complexity counting."""
-
     def __init__(self, code_or_node, stats=None, description=None):
         ASTVisitor.__init__(self)
         try:
