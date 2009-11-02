@@ -31,6 +31,9 @@ class describe_simple_statements:
             c
             """) == 1
 
+    def test_logical_operators(self):
+        assert complexity('a and b or (c or d and not e)') == 1
+
 
 class describe_conditionals:
     def test_simple_branch(self):
@@ -80,6 +83,24 @@ class describe_conditionals:
                 if y: 1
                 # implicit else
             """) == 3
+
+    def test_compound_conditionals(self):
+        assert complexity(
+            """
+            if x or y: 1
+            """) == 3
+
+    def test_chained_compound_conditionals(self):
+        assert complexity(
+            """
+            if x or y or z: 1
+            """) == 4
+
+    def test_nested_compound_conditionals(self):
+        assert complexity(
+            """
+            if x or (y or z): 1
+            """) == 4
 
 
 class describe_inline_conditionals:
@@ -307,9 +328,6 @@ class describe_integration:
                 if y: pass
                 # implicit else
             """) == 5
-
-
-#test_compound_conditionals
 
 
 def complexity(code):

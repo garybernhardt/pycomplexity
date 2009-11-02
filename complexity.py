@@ -132,7 +132,7 @@ class Complexity:
                      'exec', 'floordiv', 'genexpr', 'getattr', 'global',
                      'import', 'lambda', 'leftshift', 'list', 'listcomp',
                      'mod', 'mul', 'not', 'or', 'power', 'raise', 'print',
-                     'printnl', 'return', 'rightshift', 'slice', 'sub',
+                     'printnl', 'return', 'rightshift', 'slice', 'str', 'sub',
                      'tuple',
                     ]
     for node_name in TRIVIAL_NODES:
@@ -161,13 +161,23 @@ class Complexity:
 
     @debug
     def score_if(self, node):
-        test_scores = sum(self.score_node(statement)
+        test_scores = sum(self.score_condition(condition)
+                          + self.score_node(statement)
                           for condition, statement in node.tests)
         if node.else_ is None:
             else_score = self.IMPLICIT_ELSE_SCORE
         else:
             else_score = self.score_node(node.else_)
         return test_scores + else_score
+
+    @debug
+    def score_condition(self, node):
+        if node.__class__.__name__ in ['And', 'Or']:
+            this_node_score = len(node.nodes) - 1
+        else:
+            this_node_score = 0
+        children_score = sum(map(self.score_condition, node.getChildNodes()))
+        return this_node_score + children_score
 
     @debug
     def score_for(self, node):
