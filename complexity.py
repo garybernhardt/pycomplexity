@@ -207,13 +207,19 @@ class Complexity:
 class Complexity(ASTVisitor):
     """Encapsulates the cyclomatic complexity counting."""
 
-    def __init__(self, ast, stats=None, description=None):
+    def __init__(self, code_or_node, stats=None, description=None):
         ASTVisitor.__init__(self)
-        ast = compiler.parse(ast)
+        try:
+            node = compiler.parse(code_or_node)
+        except TypeError:
+            node = code_or_node
+
         self.score = 1
         self._in_conditional = False
         self.stack = []
-        compiler.walk(ast.node, self, walker=self)
+        self.stats = []
+        for child in node.getChildNodes():
+            compiler.walk(child, self, walker=self)
         print 'got score', self.score
 
     def dispatchChildren(self, node):
@@ -222,23 +228,24 @@ class Complexity(ASTVisitor):
             self.dispatch(child)
         self.stack.pop()
 
-    #def visitFunction(self, node):
-    #    if not hasattr(node, 'name'): # lambdas
-    #        node.name = '<lambda>'
-    #    stats = DefStats(node.name,
-    #                     node.lineno,
-    #                     self.highest_line_in_node(node))
-    #    stats = CCVisitor(node, stats).stats
-    #    self.stats.functions.append(stats)
+    def visitFunction(self, node):
+        #if not hasattr(node, 'name'): # lambdas
+        #    node.name = '<lambda>'
+        score=Complexity(node).score
+        stats = Stats(name=node.name,
+                      score=score,
+                      start_line=node.lineno,
+                      end_line=self.highest_line_in_node(node))
+        self.stats.append(stats)
 
-    #def highest_line_in_node(self, node, highest=0):
-    #    children = node.getChildNodes()
-    #    if node.lineno > highest:
-    #        highest = node.lineno
-    #    child_lines = map(self.highest_line_in_node,
-    #                   node.getChildNodes())
-    #    lines = [node.lineno] + child_lines
-    #    return max(lines)
+    def highest_line_in_node(self, node, highest=0):
+        children = node.getChildNodes()
+        if node.lineno > highest:
+            highest = node.lineno
+        child_lines = map(self.highest_line_in_node,
+                          node.getChildNodes())
+        lines = [node.lineno] + child_lines
+        return max(lines)
 
     #visitLambda = visitFunction
 
@@ -283,6 +290,14 @@ class Complexity(ASTVisitor):
     def visitTryExcept(self, node):
         self.dispatchChildren(node)
         self.score += len(node.handlers)
+
+
+class Stats:
+    def __init__(self, name, score, start_line, end_line):
+        self.name = name
+        self.score = score
+        self.start_line = start_line
+        self.end_line = end_line
 
 
 def measure_complexity(ast, module_name=None):

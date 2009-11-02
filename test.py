@@ -5,23 +5,23 @@ from complexity import Complexity
 
 class describe_simple_statements:
     def test_pass(self):
-        assert complexity('pass') == 1
+        assert complexity('pass').score == 1
 
     def test_statement_sequence(self):
         assert complexity(
             """
             pass
             pass
-            """) == 1
+            """).score == 1
 
     def test_constant(self):
-        assert complexity("1") == 1
+        assert complexity("1").score == 1
 
     def test_assignment(self):
-        assert complexity("x = 1") == 1
+        assert complexity("x = 1").score == 1
 
     def test_name(self):
-        assert complexity("a") == 1
+        assert complexity("a").score == 1
 
     def test_sequence_of_names(self):
         assert complexity(
@@ -29,10 +29,10 @@ class describe_simple_statements:
             a
             b
             c
-            """) == 1
+            """).score == 1
 
     def test_logical_operators(self):
-        assert complexity('a and b or (c or d and not e)') == 1
+        assert complexity('a and b or (c or d and not e)').score == 1
 
 
 class describe_conditionals:
@@ -41,14 +41,14 @@ class describe_conditionals:
             """
             if x: 1
             # implicit else
-            """) == 2
+            """).score == 2
 
     def test_branch_with_else(self):
         assert complexity(
             """
             if x: 1
             else: 2
-            """) == 2
+            """).score == 2
 
     def test_branch_with_else_if(self):
         assert complexity(
@@ -56,7 +56,7 @@ class describe_conditionals:
             if x: 1
             elif y: 2
             # implicit else
-            """) == 3
+            """).score == 3
 
     def test_branch_with_else_if_and_else(self):
         assert complexity(
@@ -64,7 +64,7 @@ class describe_conditionals:
             if x: 1
             elif y: 2
             else: 3
-            """) == 3
+            """).score == 3
 
     def test_child_nodes_of_ifs(self):
         assert complexity(
@@ -73,7 +73,7 @@ class describe_conditionals:
                 if y: 1
                 else: 2
             else: 3
-            """) == 3
+            """).score == 3
 
     def test_child_nodes_of_elses(self):
         assert complexity(
@@ -82,37 +82,37 @@ class describe_conditionals:
             else:
                 if y: 1
                 # implicit else
-            """) == 3
+            """).score == 3
 
     def test_compound_conditionals(self):
         assert complexity(
             """
             if x or y: 1
-            """) == 3
+            """).score == 3
 
     def test_chained_compound_conditionals(self):
         assert complexity(
             """
             if a or b or c and d and e: 1
-            """) == 6
+            """).score == 6
 
     def test_nested_compound_conditionals(self):
         assert complexity(
             """
             if x or (y or z): 1
-            """) == 4
+            """).score == 4
 
     def test_logical_operator_inside_conditional_but_outside_test(self):
         assert complexity(
             """
             if x:
                 x and y
-            """) == 2
+            """).score == 2
 
 
 class describe_inline_conditionals:
     def test_inline_conditionals(self):
-        assert complexity("b if c else d") == 2
+        assert complexity("b if c else d").score == 2
 
     def test_nested_inline_conditionals(self):
         assert complexity(
@@ -122,10 +122,10 @@ class describe_inline_conditionals:
              else (d
                    if e
                    else f))
-            """) == 3
+            """).score == 3
 
     def test_logical_operator_in_inline_conditional(self):
-        assert complexity("a if b and c else d") == 3
+        assert complexity("a if b and c else d").score == 3
 
 
 class describe_for_loops:
@@ -134,14 +134,14 @@ class describe_for_loops:
             """
             for x in y: 1
             # implicit else
-            """) == 2
+            """).score == 2
 
     def test_else_clauses_on_for_loops(self):
         assert complexity(
             """
             for x in y: 1
             else: 2
-            """) == 2
+            """).score == 2
 
     def test_child_nodes_of_for_loops(self):
         assert complexity(
@@ -150,7 +150,7 @@ class describe_for_loops:
                 if x: 1
                 else: 2
             # implicit else
-            """) == 3
+            """).score == 3
 
     def test_child_nodes_in_for_loop_else_clauses(self):
         assert complexity(
@@ -159,7 +159,7 @@ class describe_for_loops:
             else:
                 if x: 2
                 else: 3
-            """) == 3
+            """).score == 3
 
     def test_break_statements_in_for_loops(self):
         # This seems like it should be more complex than an if with "pass"es,
@@ -171,7 +171,7 @@ class describe_for_loops:
             for x in y:
                 if x:
                     break
-            """) == 3
+            """).score == 3
 
     def test_break_statements_in_for_loops_with_else_clauses(self):
         # A "break" in a for loop skips the "else". My intuitive
@@ -186,7 +186,7 @@ class describe_for_loops:
                     break
             else:
                 pass
-            """) == 3
+            """).score == 3
 
     def test_continue_statement_in_for_loop(self):
         assert complexity(
@@ -194,7 +194,7 @@ class describe_for_loops:
             for x in y:
                 if x:
                     continue
-            """) == 3
+            """).score == 3
 
 
 # These are basically identical to the "for" loop tests, but abstracting them
@@ -205,14 +205,14 @@ class describe_while_loops:
             """
             while x: 1
             # implicit else
-            """) == 2
+            """).score == 2
 
     def test_else_clauses_on_while_loops(self):
         assert complexity(
             """
             while x: 1
             else: 2
-            """) == 2
+            """).score == 2
 
     def test_child_nodes_of_while_loops(self):
         assert complexity(
@@ -221,7 +221,7 @@ class describe_while_loops:
                 if x: 1
                 else: 2
             # implicit else
-            """) == 3
+            """).score == 3
 
     def test_child_nodes_in_while_loop_else_clauses(self):
         assert complexity(
@@ -230,7 +230,7 @@ class describe_while_loops:
             else:
                 if x: 2
                 else: 3
-            """) == 3
+            """).score == 3
 
     def test_break_statements_in_while_loops(self):
         # See discussion for "for" loops above.
@@ -239,7 +239,7 @@ class describe_while_loops:
             while x:
                 if x:
                     break
-            """) == 3
+            """).score == 3
 
     def test_break_statements_in_while_loops_with_else_clauses(self):
         # See discussion for for loops above.
@@ -250,7 +250,7 @@ class describe_while_loops:
                     break
             else:
                 pass
-            """) == 3
+            """).score == 3
 
     def test_continue_statement_in_while_loop(self):
         assert complexity(
@@ -258,7 +258,7 @@ class describe_while_loops:
             while x:
                 if x:
                     continue
-            """) == 3
+            """).score == 3
 
 
 class describe_exception_handling:
@@ -267,7 +267,7 @@ class describe_exception_handling:
             """
             try: 1
             except: 2
-            """) == 2
+            """).score == 2
 
     def test_try_with_multiple_excepts(self):
         assert complexity(
@@ -276,14 +276,14 @@ class describe_exception_handling:
             except A: 2
             except B: 3
             except C: 4
-            """) == 4
+            """).score == 4
 
     def test_try_with_multiple_exception_types_in_one_except(self):
         assert complexity(
             """
             try: 1
             except (A, B): 2
-            """) == 2
+            """).score == 2
 
     def test_try_with_child_nodes(self):
         assert complexity(
@@ -292,7 +292,7 @@ class describe_exception_handling:
                 if x: 1
                 else: 2
             except: 2
-            """) == 3
+            """).score == 3
 
     def test_try_with_finally(self):
         assert complexity(
@@ -300,7 +300,7 @@ class describe_exception_handling:
             try: 1
             except: 2
             finally: 3
-            """) == 2
+            """).score == 2
 
     def test_try_with_else(self):
         assert complexity(
@@ -308,7 +308,7 @@ class describe_exception_handling:
             try: 1
             except: 2
             else: 3
-            """) == 2
+            """).score == 2
 
     def test_try_with_finally_and_child_nodes(self):
         # Try/finally/else/except are all deceiving. The try and finally don't
@@ -330,27 +330,27 @@ class describe_exception_handling:
             finally:
                 if a: 1
                 else: 2
-            """) == 6
+            """).score == 6
 
 
 class describe_list_comprehensions:
     def test_list_comprehension(self):
-        assert complexity("[x for x in y]") == 2
+        assert complexity("[x for x in y]").score == 2
 
     def test_list_comprehension_with_inline_conditional(self):
-        assert complexity("[x if y else z for x in x]") == 3
+        assert complexity("[x if y else z for x in x]").score == 3
 
     def test_nested_list_comprehensions(self):
-        assert complexity("[x for x in [y for y in z]]") == 3
+        assert complexity("[x for x in [y for y in z]]").score == 3
 
     def test_list_comprehensions_with_multiple_fors(self):
-        assert complexity("[x for x in y for y in z]") == 3
+        assert complexity("[x for x in y for y in z]").score == 3
 
     def test_list_comprehension_with_conditional(self):
-        assert complexity("[x for x in y if x]") == 3
+        assert complexity("[x for x in y if x]").score == 3
 
     def test_list_comprehension_with_multiple_conditionals(self):
-        assert complexity("[x for x in y if x and y]") == 4
+        assert complexity("[x for x in y if x and y]").score == 4
 
     def test_list_comprehension_with_multiple_conditionals_and_fors(self):
         assert complexity(
@@ -358,27 +358,27 @@ class describe_list_comprehensions:
             [x for x in x
              for y in y
              if x and y]
-            """) == 5
+            """).score == 5
 
 
 class describe_generator_expression:
     def test_generator_expression(self):
-        assert complexity("(x for x in y)") == 2
+        assert complexity("(x for x in y)").score == 2
 
     def test_with_inline_conditional(self):
-        assert complexity("(x if y else z for x in x)") == 3
+        assert complexity("(x if y else z for x in x)").score == 3
 
     def test_nested(self):
-        assert complexity("(x for x in (y for y in z))") == 3
+        assert complexity("(x for x in (y for y in z))").score == 3
 
     def test_with_multiple_fors(self):
-        assert complexity("(x for x in y for y in z)") == 3
+        assert complexity("(x for x in y for y in z)").score == 3
 
     def test_with_conditional(self):
-        assert complexity("(x for x in y if x)") == 3
+        assert complexity("(x for x in y if x)").score == 3
 
     def test_with_multiple_conditionals(self):
-        assert complexity("(x for x in y if x and y)") == 4
+        assert complexity("(x for x in y if x and y)").score == 4
 
     def test_with_multiple_conditionals_and_fors(self):
         assert complexity(
@@ -386,7 +386,39 @@ class describe_generator_expression:
             (x for x in x
              for y in y
              if x and y)
-            """) == 5
+            """).score == 5
+
+
+class describe_functions:
+    def test_that_they_are_scored(self):
+        assert complexity(
+            """
+            def foo():
+                0 if x else 1
+            """).stats[0].score == 2
+        assert complexity(
+            """
+            def foo():
+                0 if x else 1 if y else 2
+            """).stats[0].score == 3
+
+    def test_that_they_know_their_names(self):
+        assert complexity(
+            """
+            def foo(): pass
+            """).stats[0].name == 'foo'
+
+    def test_that_they_know_their_line_range(self):
+        stats = complexity("def foo(): pass").stats[0]
+        assert stats.start_line == 1
+        assert stats.end_line == 1
+
+        stats = complexity(
+            """
+            def foo(): pass
+            """).stats[0]
+        assert stats.start_line == 2
+        assert stats.end_line == 2
 
 
 class describe_integration:
@@ -398,7 +430,7 @@ class describe_integration:
                 # implicit else
                 if y: pass
                 # implicit else
-            """) == 4
+            """).score == 4
 
     def test_a_big_hairy_mess(self):
         assert complexity(
@@ -422,9 +454,9 @@ class describe_integration:
                     (y for y in z) #1
                 finally:
                     raise (x for x in z) #1
-            """) == 15
+            """).score == 15
 
 
 def complexity(code):
-    return Complexity(dedent(code)).score
+    return Complexity(dedent(code))
 
