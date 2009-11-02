@@ -93,8 +93,8 @@ class describe_conditionals:
     def test_chained_compound_conditionals(self):
         assert complexity(
             """
-            if x or y or z: 1
-            """) == 4
+            if a or b or c and d and e: 1
+            """) == 6
 
     def test_nested_compound_conditionals(self):
         assert complexity(
@@ -290,7 +290,7 @@ class describe_exception_handling:
             try: 1
             except: 2
             finally: 3
-            """) == 3
+            """) == 2
 
     def test_try_with_else(self):
         assert complexity(
@@ -298,9 +298,14 @@ class describe_exception_handling:
             try: 1
             except: 2
             else: 3
-            """) == 3
+            """) == 2
 
     def test_try_with_finally_and_child_nodes(self):
+        # Try/finally/else/except are all deceiving. The try and finally don't
+        # add any paths because they both always happen. An except adds one
+        # (it can either happen or not), but an else doesn't (it's equivalent
+        # to adding the code after the line in the try: that threw the
+        # exception, so it doesn't add a path).
         assert complexity(
             """
             try:
@@ -315,7 +320,7 @@ class describe_exception_handling:
             finally:
                 if a: 1
                 else: 2
-            """) == 8
+            """) == 6
 
 
 class describe_integration:
@@ -327,7 +332,7 @@ class describe_integration:
                 # implicit else
                 if y: pass
                 # implicit else
-            """) == 5
+            """) == 4
 
 
 def complexity(code):

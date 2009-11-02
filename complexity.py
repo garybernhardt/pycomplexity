@@ -204,6 +204,83 @@ class Complexity:
         return self.score_node(node.body) + self.score_node(node.final)
 
 
+class Complexity(ASTVisitor):
+    """Encapsulates the cyclomatic complexity counting."""
+
+    def __init__(self, ast, stats=None, description=None):
+        ASTVisitor.__init__(self)
+        ast = compiler.parse(ast)
+        self.score = 1
+        self.stack = []
+        compiler.walk(ast.node, self, walker=self)
+        print 'got score', self.score
+
+    def dispatchChildren(self, node):
+        self.stack.append(node)
+        for child in node.getChildNodes():
+            self.dispatch(child)
+        self.stack.pop()
+
+    #def visitFunction(self, node):
+    #    if not hasattr(node, 'name'): # lambdas
+    #        node.name = '<lambda>'
+    #    stats = DefStats(node.name,
+    #                     node.lineno,
+    #                     self.highest_line_in_node(node))
+    #    stats = CCVisitor(node, stats).stats
+    #    self.stats.functions.append(stats)
+
+    #def highest_line_in_node(self, node, highest=0):
+    #    children = node.getChildNodes()
+    #    if node.lineno > highest:
+    #        highest = node.lineno
+    #    child_lines = map(self.highest_line_in_node,
+    #                   node.getChildNodes())
+    #    lines = [node.lineno] + child_lines
+    #    return max(lines)
+
+    #visitLambda = visitFunction
+
+    #def visitClass(self, node):
+    #    stats = ClassStats(node.name)
+    #    stats = CCVisitor(node, stats).stats
+    #    self.stats.classes.append(stats)
+
+    def visitIf(self, node):
+        print len(node.tests)
+        self.score += len(node.tests)
+        self.dispatchChildren(node)
+
+    def __processDecisionPoint(self, node):
+        self.score += 1
+        self.dispatchChildren(node)
+
+    visitFor = visitGenExprFor = visitGenExprIf \
+            = visitListCompFor = visitListCompIf \
+            = visitWhile = _visitWith = __processDecisionPoint
+
+    def _visit_conditional(self, node):
+        self.dispatchChildren(node)
+        if self._in_conditional():
+            self.score += len(node.getChildren()) - 1
+
+    visitAnd = _visit_conditional
+    visitOr = _visit_conditional
+
+    def _in_conditional(self):
+        return any(node.__class__.__name__ == 'If'
+                   for node in self.stack)
+
+    def visitTryExcept(self, node):
+        self.dispatchChildren(node)
+        print len(node.handlers)
+        self.score += len(node.handlers)
+
+    def visitIfExp(self, node):
+        self.dispatchChildren(node)
+        self.score += 1
+
+
 def measure_complexity(ast, module_name=None):
     return CCVisitor(ast, description=module_name).stats
 
