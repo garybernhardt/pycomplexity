@@ -134,20 +134,74 @@ def complexity_name(complexity):
 
 
 def show_complexity():
-    import vim
-
-    current_file = vim.eval('expand("%:p")')
-    code = open(current_file).read()
     try:
-        stats = Complexity(code).stats.ordered_by_line()
+        current_file = get_current_file_name()
     except (IndentationError, SyntaxError):
         return
 
-    vim.command('sign unplace *')
+    stats = compute_stats_for_(current_file)
+    old_complexities = get_old_complexities(current_file)
+    new_complexities = compute_new_complexities(stats)
+    line_changes = compute_line_changes(old_complexities, new_complexities)
+    update_line_markers(line_changes)
 
+
+def get_current_file_name():
+    return vim.eval('expand("%:p")')
+
+
+def compute_stats_for_(filename):
+    code = open(filename).read()
+    stats = Complexity(code).stats.ordered_by_line()
+    return stats
+
+
+def get_old_complexities(current_file):
+    lines = list_current_signs(current_file)
+
+    old_complexities = {}
+    for line in lines:
+        if '=' not in line:
+            continue
+
+        tokens = line.split()
+        variables = dict(token.split('=') for token in tokens)
+        line = int(variables['line'])
+        complexity = variables['name']
+        old_complexities[line] = complexity
+
+    return old_complexities
+
+
+def list_current_signs(current_file):
+    vim.command('redir => s:complexity_sign_list')
+    vim.command('silent sign place file=%s' % current_file)
+    vim.command('redir END')
+
+    sign_list = vim.eval('s:complexity_sign_list')
+    lines = [line.strip() for line in sign_list.split('\n')]
+    return lines
+
+
+def compute_line_changes(cached_complexities, new_scores):
+    changes = {}
+    for line, complexity in new_scores.iteritems():
+        if complexity != cached_complexities.get(line, None):
+            changes[line] = complexity
+
+    return changes
+
+
+def compute_new_complexities(stats):
+    new_scores = {}
     for stat in stats:
-        complexity = complexity_name(stat.score)
         for line in range(stat.start_line, stat.end_line + 1):
-            vim.command(':sign place %i line=%i name=%s file=%s' %
-                        (line, line, complexity, vim.eval('expand("%:p")')))
+            new_scores[line] = complexity_name(stat.score)
+    return new_scores
+
+
+def update_line_markers(line_changes):
+    for line, complexity in line_changes.iteritems():
+        vim.command(':sign place %i line=%i name=%s file=%s' %
+                    (line, line, complexity, vim.eval('expand("%:p")')))
 
