@@ -1,0 +1,3 @@
+Should catching multiple exception types in an "except" increase complexity?
+
+Handle nested functions.
