@@ -44,3 +44,13 @@ class describe_integration:
                     raise (x for x in z) #1
             """).score == 15
 
+    def test_module_stat_comes_before_function_stat(self):
+        stats = complexity("def foo(): pass\npass").stats
+        stat_names = [stat.name for stat in stats.ordered_by_line()]
+        assert stat_names == ['<module>', 'foo']
+
+    def test_class_stat_comes_before_module_stat(self):
+        stats = complexity("class Foo: pass\npass").stats
+        stat_names = [stat.name for stat in stats.ordered_by_line()]
+        assert stat_names == ['<module>', 'Foo']
+

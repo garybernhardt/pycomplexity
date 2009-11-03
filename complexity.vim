@@ -33,6 +33,7 @@ class Complexity(ASTVisitor):
         if in_module:
             end_line = max(1, code_or_node.count('\n') + 1)
             self.stats.add(Stats(name='<module>',
+                                 type_='module',
                                  score=self.score,
                                  start_line=1,
                                  end_line=end_line))
@@ -44,6 +45,7 @@ class Complexity(ASTVisitor):
     def visitFunction(self, node):
         score=Complexity(node).score
         stats = Stats(name=node.name,
+                      type_='function',
                       score=score,
                       start_line=node.lineno,
                       end_line=self.highest_line_in_node(node))
@@ -52,6 +54,7 @@ class Complexity(ASTVisitor):
     def visitClass(self, node):
         complexity = Complexity(node)
         self.stats.add(Stats(name=node.name,
+                             type_='class',
                              score=complexity.score,
                              start_line=node.lineno,
                              end_line=self.highest_line_in_node(node)))
@@ -114,15 +117,20 @@ class StatsCollection:
         self._stats.append(stats)
 
     def ordered_by_line(self):
-        return sorted(self._stats, key=lambda stats: stats.start_line)
+        OBJECT_SORT_PRIORITY = ['module', 'function', 'class']
+        def sort_key(stats):
+            return (stats.start_line,
+                    OBJECT_SORT_PRIORITY.index(stats.type_))
+        return sorted(self._stats, key=sort_key)
 
     def named(self, name):
         return [s for s in self._stats if s.name == name][0]
 
 
 class Stats:
-    def __init__(self, name, score, start_line, end_line):
+    def __init__(self, name, type_, score, start_line, end_line):
         self.name = name
+        self.type_ = type_
         self.score = score
         self.start_line = start_line
         self.end_line = end_line
