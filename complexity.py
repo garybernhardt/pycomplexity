@@ -142,12 +142,12 @@ def complexity_name(complexity):
 
 
 def show_complexity():
+    current_file = get_current_file_name()
     try:
-        current_file = get_current_file_name()
+        stats = compute_stats_for(current_file)
     except (IndentationError, SyntaxError):
         return
 
-    stats = compute_stats_for_(current_file)
     old_complexities = get_old_complexities(current_file)
     new_complexities = compute_new_complexities(stats)
     line_changes = compute_line_changes(old_complexities, new_complexities)
@@ -158,7 +158,7 @@ def get_current_file_name():
     return vim.eval('expand("%:p")')
 
 
-def compute_stats_for_(filename):
+def compute_stats_for(filename):
     code = open(filename).read()
     stats = Complexity(code).stats.ordered_by_line()
     return stats
