@@ -5,6 +5,7 @@
 " no longer wrong (as previous versions were!)
 
 python << endpython
+import vim
 %(python_source)s
 endpython
 
