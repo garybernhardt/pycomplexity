@@ -11,7 +11,7 @@ from compiler.visitor import ASTVisitor
 
 
 class Complexity(ASTVisitor):
-    def __init__(self, code_or_node, stats=None, description=None):
+    def __init__(self, code_or_node):
         ASTVisitor.__init__(self)
         try:
             node = compiler.parse(code_or_node)
