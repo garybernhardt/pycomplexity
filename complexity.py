@@ -19,17 +19,17 @@ class Complexity(ASTVisitor):
 
         self.score = 1
         self._in_conditional = False
-        self.stats = StatsCollection()
+        self.results = ComplexityResults()
         for child in node.getChildNodes():
             compiler.walk(child, self, walker=self)
 
         if in_module:
             end_line = max(1, code_or_node.count('\n') + 1)
-            self.stats.add(Stats(name='<module>',
-                                 type_='module',
-                                 score=self.score,
-                                 start_line=1,
-                                 end_line=end_line))
+            self.results.add(ComplexityScore(name='<module>',
+                                             type_='module',
+                                             score=self.score,
+                                             start_line=1,
+                                             end_line=end_line))
 
     def dispatch_children(self, node):
         for child in node.getChildNodes():
@@ -37,23 +37,24 @@ class Complexity(ASTVisitor):
 
     def visitFunction(self, node):
         score=Complexity(node).score
-        stats = Stats(name=node.name,
-                      type_='function',
-                      score=score,
-                      start_line=node.lineno,
-                      end_line=self.highest_line_in_node(node))
-        self.stats.add(stats)
+        score = ComplexityScore(name=node.name,
+                                type_='function',
+                                score=score,
+                                start_line=node.lineno,
+                                end_line=self.highest_line_in_node(node))
+        self.results.add(score)
 
     def visitClass(self, node):
         complexity = Complexity(node)
-        self.stats.add(Stats(name=node.name,
-                             type_='class',
-                             score=complexity.score,
-                             start_line=node.lineno,
-                             end_line=self.highest_line_in_node(node)))
-        for stats_instance in complexity.stats.ordered_by_line():
-            stats_instance.name = '%s.%s' % (node.name, stats_instance.name)
-            self.stats.add(stats_instance)
+        self.results.add(ComplexityScore(
+            name=node.name,
+            type_='class',
+            score=complexity.score,
+            start_line=node.lineno,
+            end_line=self.highest_line_in_node(node)))
+        for score in complexity.results.ordered_by_line():
+            score.name = '%s.%s' % (node.name, score.name)
+            self.results.add(score)
 
     def highest_line_in_node(self, node, highest=0):
         children = node.getChildNodes()
@@ -102,25 +103,25 @@ class Complexity(ASTVisitor):
         self.score += len(node.handlers)
 
 
-class StatsCollection:
+class ComplexityResults:
     def __init__(self):
-        self._stats = []
+        self._scores = []
 
-    def add(self, stats):
-        self._stats.append(stats)
+    def add(self, score):
+        self._scores.append(score)
 
     def ordered_by_line(self):
         OBJECT_SORT_PRIORITY = ['module', 'function', 'class']
-        def sort_key(stats):
-            return (stats.start_line,
-                    OBJECT_SORT_PRIORITY.index(stats.type_))
-        return sorted(self._stats, key=sort_key)
+        def sort_key(score):
+            return (score.start_line,
+                    OBJECT_SORT_PRIORITY.index(score.type_))
+        return sorted(self._scores, key=sort_key)
 
     def named(self, name):
-        return [s for s in self._stats if s.name == name][0]
+        return [s for s in self._scores if s.name == name][0]
 
 
-class Stats:
+class ComplexityScore:
     def __init__(self, name, type_, score, start_line, end_line):
         self.name = name
         self.type_ = type_
@@ -129,11 +130,12 @@ class Stats:
         self.end_line = end_line
 
     def __repr__(self):
-        return 'Stats(name=%s, score=%s, start_line=%s, end_line=%s)' % (
-            repr(self.name),
-            repr(self.score),
-            repr(self.start_line),
-            repr(self.end_line))
+        return (
+            'ComplexityScore(name=%s, score=%s, start_line=%s, end_line=%s)'
+            % (repr(self.name),
+               repr(self.score),
+               repr(self.start_line),
+               repr(self.end_line)))
 
 
 def complexity_name(complexity):
@@ -148,12 +150,12 @@ def complexity_name(complexity):
 def show_complexity():
     current_file = get_current_file_name()
     try:
-        stats = compute_stats_for(current_file)
+        scores = compute_scores_for(current_file)
     except (IndentationError, SyntaxError):
         return
 
     old_complexities = get_old_complexities(current_file)
-    new_complexities = compute_new_complexities(stats)
+    new_complexities = compute_new_complexities(scores)
     line_changes = compute_line_changes(old_complexities, new_complexities)
     update_line_markers(line_changes)
 
@@ -162,10 +164,10 @@ def get_current_file_name():
     return vim.eval('expand("%:p")')
 
 
-def compute_stats_for(filename):
+def compute_scores_for(filename):
     code = open(filename).read()
-    stats = compute_code_complexity(code).stats.ordered_by_line()
-    return stats
+    scores = compute_code_complexity(code).results.ordered_by_line()
+    return scores
 
 
 def get_old_complexities(current_file):
@@ -204,11 +206,11 @@ def compute_line_changes(cached_complexities, new_scores):
     return changes
 
 
-def compute_new_complexities(stats):
+def compute_new_complexities(scores):
     new_scores = {}
-    for stat in stats:
-        for line in range(stat.start_line, stat.end_line + 1):
-            new_scores[line] = complexity_name(stat.score)
+    for score in scores:
+        for line in range(score.start_line, score.end_line + 1):
+            new_scores[line] = complexity_name(score.score)
     return new_scores
 
 

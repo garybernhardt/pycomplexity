@@ -6,24 +6,24 @@ class describe_modules:
         assert complexity(
             """
             a if a else a
-            """).stats.named('<module>').score == 2
+            """).results.named('<module>').score == 2
         assert complexity(
             """
                 0 if x else 1 if y else 2
-            """).stats.named('<module>').score == 3
+            """).results.named('<module>').score == 3
 
     def test_that_they_know_their_names(self):
-        assert complexity("").stats.named('<module>').name == '<module>'
+        assert complexity("").results.named('<module>').name == '<module>'
 
     def test_that_they_know_their_line_range(self):
-        stats = complexity("").stats.named('<module>')
+        stats = complexity("").results.named('<module>')
         assert stats.start_line == 1
         assert stats.end_line == 1
 
         stats = complexity(
             """
             a
-            """).stats.named('<module>')
+            """).results.named('<module>')
         print '-%s-' % (
             """
             a
@@ -38,7 +38,7 @@ class describe_modules:
             def foo():
                 a if a else a
             a if a else a
-            """).stats.named('<module>').score == 3
+            """).results.named('<module>').score == 3
 
 
 class describe_functions:
@@ -47,28 +47,28 @@ class describe_functions:
             """
             def foo():
                 0 if x else 1
-            """).stats.named('foo').score == 2
+            """).results.named('foo').score == 2
         assert complexity(
             """
             def foo():
                 0 if x else 1 if y else 2
-            """).stats.named('foo').score == 3
+            """).results.named('foo').score == 3
 
     def test_that_they_know_their_names(self):
         assert complexity(
             """
             def foo(): pass
-            """).stats.named('foo').name == 'foo'
+            """).results.named('foo').name == 'foo'
 
     def test_that_they_know_their_line_range(self):
-        stats = complexity("def foo(): pass").stats.named('foo')
+        stats = complexity("def foo(): pass").results.named('foo')
         assert stats.start_line == 1
         assert stats.end_line == 1
 
         stats = complexity(
             """
             def foo(): pass
-            """).stats.named('foo')
+            """).results.named('foo')
         assert stats.start_line == 2
         assert stats.end_line == 2
 
@@ -79,21 +79,21 @@ class describe_classes:
             """
             class Foo:
                 0 if x else 1
-            """).stats.named('Foo').score == 2
+            """).results.named('Foo').score == 2
         assert complexity(
             """
             class Foo:
                 0 if x else 1 if y else 2
-            """).stats.named('Foo').score == 3
+            """).results.named('Foo').score == 3
 
     def test_that_they_know_their_names(self):
         assert complexity(
             """
             class Foo: pass
-            """).stats.named('Foo').name == 'Foo'
+            """).results.named('Foo').name == 'Foo'
 
     def test_that_they_know_their_line_range(self):
-        stats = complexity("class Foo: pass").stats.named('Foo')
+        stats = complexity("class Foo: pass").results.named('Foo')
         assert stats.start_line == 1
         assert stats.end_line == 1
 
@@ -101,7 +101,7 @@ class describe_classes:
             """
             class Foo:
                 pass
-            """).stats.named('Foo')
+            """).results.named('Foo')
         assert stats.start_line == 2
         assert stats.end_line == 3
 
@@ -112,7 +112,7 @@ class describe_classes:
                 0 if x else 1
                 def foo(self): pass
                 0 if x else 1
-            """).stats.named('Foo')
+            """).results.named('Foo')
         assert stats.score == 3
         assert stats.end_line == 5
 
@@ -125,20 +125,20 @@ class describe_methods:
             class Foo:
                 def foo():
                     0 if x else 1
-            """).stats.named('Foo.foo').score == 2
+            """).results.named('Foo.foo').score == 2
         assert complexity(
             """
             class Foo:
                 def foo():
                     0 if x else 1 if y else 2
-            """).stats.named('Foo.foo').score == 3
+            """).results.named('Foo.foo').score == 3
 
     def test_that_they_know_their_names(self):
         assert complexity(
             """
             class Foo:
                 def foo(): pass
-            """).stats.named('Foo.foo').name == 'Foo.foo'
+            """).results.named('Foo.foo').name == 'Foo.foo'
 
     def test_that_they_know_their_line_range(self):
         stats = complexity(
@@ -146,7 +146,7 @@ class describe_methods:
             class Foo():
                 def foo():
                     pass
-            """).stats.named('Foo.foo')
+            """).results.named('Foo.foo')
         assert stats.start_line == 3
         assert stats.end_line == 4
 
@@ -157,7 +157,7 @@ class describe_methods:
                 def foo():
                     pass
                     pass
-            """).stats.named('Foo.foo')
+            """).results.named('Foo.foo')
         assert stats.start_line == 4
         assert stats.end_line == 6
 

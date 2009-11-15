@@ -18,7 +18,7 @@ class describe_integration:
             def foo():
                 x = lambda: x if x else x
                 y if y else y
-            """).stats.named('foo').score == 3
+            """).results.named('foo').score == 3
 
     def test_a_big_hairy_mess(self):
         assert complexity(
@@ -45,12 +45,12 @@ class describe_integration:
             """).score == 15
 
     def test_module_stat_comes_before_function_stat(self):
-        stats = complexity("def foo(): pass\npass").stats
+        stats = complexity("def foo(): pass\npass").results
         stat_names = [stat.name for stat in stats.ordered_by_line()]
         assert stat_names == ['<module>', 'foo']
 
     def test_class_stat_comes_before_module_stat(self):
-        stats = complexity("class Foo: pass\npass").stats
+        stats = complexity("class Foo: pass\npass").results
         stat_names = [stat.name for stat in stats.ordered_by_line()]
         assert stat_names == ['<module>', 'Foo']
 
