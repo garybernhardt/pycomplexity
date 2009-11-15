@@ -2,6 +2,10 @@ import compiler
 from compiler.visitor import ASTVisitor
 
 
+def compute_code_complexity(code):
+    return Complexity(code)
+
+
 class Complexity(ASTVisitor):
     def __init__(self, code_or_node):
         ASTVisitor.__init__(self)
@@ -160,7 +164,7 @@ def get_current_file_name():
 
 def compute_stats_for(filename):
     code = open(filename).read()
-    stats = Complexity(code).stats.ordered_by_line()
+    stats = compute_code_complexity(code).stats.ordered_by_line()
     return stats
 
 
