@@ -27,7 +27,7 @@ class Complexity(ASTVisitor):
                                  start_line=1,
                                  end_line=end_line))
 
-    def dispatchChildren(self, node):
+    def dispatch_children(self, node):
         for child in node.getChildNodes():
             self.dispatch(child)
 
@@ -67,7 +67,7 @@ class Complexity(ASTVisitor):
         for test in tests:
             self.dispatch(test)
         self._in_conditional = False
-        self.dispatchChildren(node)
+        self.dispatch_children(node)
 
     def _tests_for_if(self, if_node):
         try:
@@ -79,14 +79,14 @@ class Complexity(ASTVisitor):
 
     def __processDecisionPoint(self, node):
         self.score += 1
-        self.dispatchChildren(node)
+        self.dispatch_children(node)
 
     visitFor = visitGenExprFor \
             = visitListCompFor \
             = visitWhile = __processDecisionPoint
 
     def _visit_logical_operator(self, node):
-        self.dispatchChildren(node)
+        self.dispatch_children(node)
         if self._in_conditional:
             self.score += len(node.getChildren()) - 1
 
@@ -94,7 +94,7 @@ class Complexity(ASTVisitor):
     visitOr = _visit_logical_operator
 
     def visitTryExcept(self, node):
-        self.dispatchChildren(node)
+        self.dispatch_children(node)
         self.score += len(node.handlers)
 
 
