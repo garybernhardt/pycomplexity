@@ -1,42 +1,29 @@
-import compiler
+import compiler#{{{
 from compiler.visitor import ASTVisitor
 
-
 def compute_code_complexity(code):
-    return Complexity(code)
+    return ModuleComplexity(code).compute_complexity()
 
+#}}}
 
-class Complexity(ASTVisitor):
-    def __init__(self, code_or_node):
+class ASTComplexity(ASTVisitor):
+    def __init__(self, node):
         ASTVisitor.__init__(self)
-        try:
-            node = compiler.parse(code_or_node)
-        except TypeError:
-            node = code_or_node
-            in_module = False
-        else:
-            in_module = True
-
         self.score = 1
         self._in_conditional = False
         self.results = ComplexityResults()
+        self.process_root_node(node)
+
+    def process_root_node(self, node):
         for child in node.getChildNodes():
             compiler.walk(child, self, walker=self)
 
-        if in_module:
-            end_line = max(1, code_or_node.count('\n') + 1)
-            self.results.add(ComplexityScore(name='<module>',
-                                             type_='module',
-                                             score=self.score,
-                                             start_line=1,
-                                             end_line=end_line))
-
-    def dispatch_children(self, node):
+    def dispatch_children(self, node):#{{{
         for child in node.getChildNodes():
             self.dispatch(child)
 
     def visitFunction(self, node):
-        score=Complexity(node).score
+        score=ASTComplexity(node).score
         score = ComplexityScore(name=node.name,
                                 type_='function',
                                 score=score,
@@ -45,7 +32,7 @@ class Complexity(ASTVisitor):
         self.results.add(score)
 
     def visitClass(self, node):
-        complexity = Complexity(node)
+        complexity = ASTComplexity(node)
         self.results.add(ComplexityScore(
             name=node.name,
             type_='class',
@@ -101,9 +88,28 @@ class Complexity(ASTVisitor):
     def visitTryExcept(self, node):
         self.dispatch_children(node)
         self.score += len(node.handlers)
+#}}}
 
+class ModuleComplexity:
+    def __init__(self, code):
+        self.code = code
+        self.node = compiler.parse(code)
 
-class ComplexityResults:
+    def compute_complexity(self):
+        complexity = ASTComplexity(self.node)
+        self.add_module_results(complexity, self.code)
+        return complexity
+
+    def add_module_results(self, complexity, code_or_node):
+        end_line = max(1, code_or_node.count('\n') + 1)
+        complexity.results.add(
+            ComplexityScore(name='<module>',
+                            type_='module',
+                            score=complexity.score,
+                            start_line=1,
+                            end_line=end_line))
+
+class ComplexityResults:#{{{
     def __init__(self):
         self._scores = []
 
@@ -217,5 +223,5 @@ def compute_new_complexities(scores):
 def update_line_markers(line_changes):
     for line, complexity in line_changes.iteritems():
         vim.command(':sign place %i line=%i name=%s file=%s' %
-                    (line, line, complexity, vim.eval('expand("%:p")')))
+                    (line, line, complexity, vim.eval('expand("%:p")')))#}}}
 
