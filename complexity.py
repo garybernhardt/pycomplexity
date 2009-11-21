@@ -222,6 +222,7 @@ def compute_new_complexities(scores):
 
 def update_line_markers(line_changes):
     for line, complexity in line_changes.iteritems():
+        vim.command(':sign unplace %i' % line)
         vim.command(':sign place %i line=%i name=%s file=%s' %
                     (line, line, complexity, vim.eval('expand("%:p")')))#}}}
 
