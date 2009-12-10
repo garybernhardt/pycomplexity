@@ -154,7 +154,7 @@ def complexity_name(complexity):
 
 
 def show_complexity():
-    current_file = get_current_file_name()
+    current_file = vim.current.buffer.name
     try:
         scores = compute_scores_for(current_file)
     except (IndentationError, SyntaxError):
@@ -164,10 +164,6 @@ def show_complexity():
     new_complexities = compute_new_complexities(scores)
     line_changes = compute_line_changes(old_complexities, new_complexities)
     update_line_markers(line_changes)
-
-
-def get_current_file_name():
-    return vim.eval('expand("%:p")')
 
 
 def compute_scores_for(filename):
@@ -221,8 +217,9 @@ def compute_new_complexities(scores):
 
 
 def update_line_markers(line_changes):
+    filename = vim.current.buffer.name
     for line, complexity in line_changes.iteritems():
         vim.command(':sign unplace %i' % line)
         vim.command(':sign place %i line=%i name=%s file=%s' %
-                    (line, line, complexity, vim.eval('expand("%:p")')))#}}}
+                    (line, line, complexity, filename))#}}}
 
