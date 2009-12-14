@@ -12,6 +12,10 @@ if !has('python')
 endif
 python << endpython
 import vim
+#!/usr/bin/env python
+from tempfile import mkstemp
+import sys
+import os
 import compiler#{{{
 from compiler.visitor import ASTVisitor
 
@@ -237,6 +241,34 @@ def update_line_markers(line_changes):
         vim.command(':sign place %i line=%i name=%s file=%s' %
                     (line, line, complexity, filename))#}}}
 
+
+def main():
+    if sys.stdin.isatty() and len(sys.argv) < 2:
+        print "Missing filename"
+        return
+
+    temporary_file = None
+    if len(sys.argv) > 1:
+        file_name = sys.argv[1]
+    else:
+        content = sys.stdin.read()
+        temporary_fd, file_name = mkstemp()
+        temporary_file = os.fdopen(temporary_fd, "w")
+        temporary_file.write(content)
+        temporary_file.close()
+
+    try:
+        for score in compute_scores_for(file_name):
+            print score.start_line, score.end_line, score.score, score.type_
+    except:
+        pass
+    finally:
+        if temporary_file is not None:
+            os.unlink(file_name)
+
+
+if __name__ == '__main__':
+    main()
 
 endpython
 
