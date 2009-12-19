@@ -141,11 +141,12 @@
        (setf complexity-last-change (float-time))
        (let* ((temp-source-file-name (pycomplexity-make-buffer-copy))
               (result (pycomplexity-get-raw-complexity-data temp-source-file-name))
-              (data (loop for line in (split-string result "[\n\r]+")
-                 for parsed-line = (loop for item in (split-string line)
-                                              when item collect (read item))
-                 when (and parsed-line
-                           (equal (car (last parsed-line)) 'function))
+              (data (loop
+                       for line in (save-match-data (split-string result "[\n\r]+"))
+                       for parsed-line = (loop for item in (split-string line)
+                                               when item collect (read item))
+                       when (and parsed-line
+                                 (equal (car (last parsed-line)) 'function))
                  collect (subseq parsed-line 0 3))))
           (when data (setf complexity-data data))
           (delete-file temp-source-file-name)))))
