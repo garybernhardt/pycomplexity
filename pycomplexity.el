@@ -26,7 +26,7 @@
 
 ;; Add to your .emacs:
 
-;;    (add-to-list 'load-path "~/.site-lisp/vim-complexity/")
+;;    (add-to-list 'load-path "~/.site-lisp/pycomplexity/")
 
 ;;    (require 'linum)
 ;;    (require 'pycomplexity)
