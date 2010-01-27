@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-from tempfile import mkstemp
 import sys
 import os
 import compiler#{{{
@@ -170,8 +169,9 @@ def show_complexity():
     update_line_markers(line_changes)
 
 
-def compute_scores_for(filename):
-    code = open(filename).read()
+def compute_scores_for(filename=None, code=None):
+    if filename:
+        code = open(filename).read()
     scores = compute_code_complexity(code).results.ordered_by_line()
     return scores
 
@@ -233,24 +233,18 @@ def main():
         print "Missing filename"
         return
 
-    temporary_file = None
     if len(sys.argv) > 1:
         file_name = sys.argv[1]
+        content = None
     else:
+        file_name = None
         content = sys.stdin.read()
-        temporary_fd, file_name = mkstemp()
-        temporary_file = os.fdopen(temporary_fd, "w")
-        temporary_file.write(content)
-        temporary_file.close()
 
     try:
-        for score in compute_scores_for(file_name):
+        for score in compute_scores_for(file_name, content):
             print score.start_line, score.end_line, score.score, score.type_
     except:
         pass
-    finally:
-        if temporary_file is not None:
-            os.unlink(file_name)
 
 
 if __name__ == '__main__':
