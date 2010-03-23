@@ -248,4 +248,5 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    if 'vim' not in globals():
+        main()
