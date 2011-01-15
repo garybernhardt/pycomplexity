@@ -199,9 +199,14 @@ def get_old_complexities(current_file):
             continue
 
         tokens = line.split()
-        variables = dict(token.split('=') for token in tokens)
-        line = int(variables['line'])
-        complexity = variables['name']
+        # 2 test made with vim using French locale and C locale.
+        # :sign place file=% produces the following output:
+        # ligne=XX id=XX nom=XX in French
+        # line=XX id=XX name=XX in C locale
+        # we just need to extract fields by using their
+        # position (line, id, name) to become locale independent
+        line, id, complexity = [field.split('=')[1] for field in tokens]
+        line = int(line)
         old_complexities[line] = complexity
 
     return old_complexities
