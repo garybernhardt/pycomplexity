@@ -10,6 +10,20 @@ endif
 if !has('python')
     finish
 endif
+
+function! s:ClearSigns()
+   sign unplace *
+endfunction
+
+function! s:ToggleComplexity()
+    if exists("g:complexity_is_displaying") && (g:complexity_is_displaying == 1)
+        call s:ClearSigns()
+        let g:complexity_is_displaying = 0
+    else
+        call ShowComplexity()
+        let g:complexity_is_displaying = 1
+endfunction
+
 python << endpython
 import vim
 #!/usr/bin/env python
