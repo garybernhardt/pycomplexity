@@ -15,7 +15,6 @@ if exists("g:loaded_complexity") || &cp
   finish
 endif
 
-
 function! s:ClearSigns()
    sign unplace *
 endfunction
@@ -24,7 +23,6 @@ function! s:ToggleComplexity()
     if exists("g:complexity_is_displaying") && g:complexity_is_displaying
         call s:ClearSigns()
         let g:complexity_is_displaying = 0
-        au!
     else
         call s:ShowComplexity()
     endif
