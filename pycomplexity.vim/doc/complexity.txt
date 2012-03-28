@@ -1,0 +1,47 @@
+*complexity.txt*  Adds cyclomatic complexity annotations to your source code.
+
+==============================================================================
+CONTENTS                                                 *Complexity-contents*
+
+    1. Intro ............................ |ComplexityIntro|
+    2. Usage ............................ |ComplexityUsage|
+    3. License ........................ |ComplexityLicense|
+    4. Credits ........................ |ComplexityCredits|
+
+==============================================================================
+1. Intro                                                     *ComplexityIntro*
+
+A Vim plugin to annotate your source code with Vim's column signs with color
+codes.
+
+Three levels of complexity are reported: low, normal and high. Each one of them
+represents a color in the cyclomatic complexity level:
+
+* low = Green
+* normal = Orange
+* high = Red
+
+==============================================================================
+2. Usage                                                     *ComplexityUsage*
+
+This plugin provides a single command::
+
+    :Complexity
+
+It toggles on or off the signs displayed on the current buffer being edited. It
+also has the option to include a variable in your Vim configuration file to have
+Complexity run always. The default is to be OFF. You can assign this variable
+like:
+
+    let g:complexity_always_on = 1
+
+
+==============================================================================
+3. License                                                 *ComplexityLicense*
+
+TODO
+
+==============================================================================
+2. Credits                                                 *ComplexityCredits*
+
+TODO
