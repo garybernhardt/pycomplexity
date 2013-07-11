@@ -21,7 +21,7 @@ Vim plugin is in *pycomplexity.vim* directory
 If you're using [NeoBundle][NeoBundleRepository] plugin manager you can add this into ~/.vimrc:
 
 ```viml
-NeoBundle 'garybernhardt/pycomplexity', {'rtp': 'pycomplexity.vim/'
+NeoBundle 'garybernhardt/pycomplexity', {'rtp': 'pycomplexity.vim/'}
 " optional F6 mapping to fire :Complexity command
 nnoremap <silent> <F6> :Complexity<CR>
 ```
