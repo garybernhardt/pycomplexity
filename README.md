@@ -2,8 +2,7 @@
 
 Scripts to show cyclomatic complexity of Python code in [Vim][VimHome] and [Emacs][EmacsHome].
 
-Original vim script by Gary Bernhardt
-Emacs support added by Ignas Mikalajūnas
+Original vim script by **Gary Bernhardt**. Emacs support added by **Ignas Mikalajūnas**.
 
 Patches contributed by:
 
